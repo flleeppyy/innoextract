@@ -57,3 +57,29 @@ jobs:
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Dependencies
+      run: |
+        choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"' -y
+        choco install boost -y
+        choco install xz -y
+
+    - name: Configure
+      run: cmake --version && cmake -B ${{github.workspace}}/build -G "Visual Studio 17 2022" -DCONTINUOUS_INTEGRATION=1
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: |
+          ${{github.workspace}}/build/**/Release/*
+          !**/*.pdb
